@@ -27,6 +27,7 @@ ARG https_proxy
 
 RUN set -e && \
     apk --no-cache add \
+    ca-certificates=20251003-r0 \
     git=2.52.0-r0 \
     build-base=0.5-r3
 
@@ -85,6 +86,7 @@ LABEL description="Cloudflared Distroless Image (non official)" \
 
 WORKDIR /
 
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder --chown="${UID}:${GID}" /src/cloudflared .
 
 ENV NO_AUTOUPDATE=true
