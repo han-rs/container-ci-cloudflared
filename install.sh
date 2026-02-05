@@ -2,77 +2,114 @@
 
 set -e
 
+NC='\033[0m'
+
+log_error() {
+	RED='\033[0;31m'
+	echo "${RED}$1${NC}"
+}
+
+log_success() {
+	GREEN='\033[0;32m'
+	echo "${GREEN}$1${NC}"
+}
+
+log_warning() {
+	YELLOW='\033[1;33m'
+	echo "${YELLOW}$1${NC}"
+}
+
+log_info() {
+	BLUE='\033[0;34m'
+	echo "${BLUE}$1${NC}"
+}
+
 # Check if podman is installed
 if ! command -v podman >/dev/null 2>&1; then
-    echo "Error: podman is not installed. Please install podman first."
-    exit 1
+	log_error "Error: podman is not installed. Please install podman first."
+	exit 1
 fi
 
-# Parse arguments
-RESTART=${RESTART:-"false"}
-SKIP_EDIT=${SKIP_EDIT:-"false"}
-UPDATE_CONF=${UPDATE_CONF:-"false"}
-VERSION=${VERSION:-"latest"}
+# Non-interactive mode.
+FULL_UPGRADE=${FULL_UPGRADE:-"false"}
+UPGRADE=${UPGRADE:-"false"}
+NONINTERACTIVE=${NONINTERACTIVE:-"false"}
+
+# Function to safely copy config file with backup
+copy() {
+	local src="$1"
+	local dest="$2"
+
+	# Check if config already exists
+	if [ -f "$dest" ]; then
+		log_warning "Warning: Existing ${dest} will be backed up"
+		cp "$dest" "${dest}.bak"
+	fi
+
+	cp -f "$src" "$dest"
+}
 
 for arg in "$@"; do
-    case $arg in
-        --restart)
-            RESTART="true"
-            shift
-            ;;
-        --version=*)
-            VERSION="${arg#*=}"
-            shift
-            ;;
-    esac
+	case $arg in
+	--upgrade)
+		UPGRADE="true"
+		shift
+		;;
+	--full-upgrade)
+		UPGRADE="true"
+		FULL_UPGRADE="true"
+		shift
+		;;
+	--noninteractive)
+		NONINTERACTIVE="true"
+		shift
+		;;
+	esac
 done
 
-if [ ! -f "./assets/cloudflared.container" ]; then
-    echo "Error: assets/cloudflared.container not found"
-    exit 1
+log_info "Pulling image..."
+
+if ! podman pull ghcr.io/han-rs/container-ci-cloudflared:latest; then
+	log_error "Error: Failed to pull image."
+	exit 1
 fi
 
-echo "Pulling image version: ${VERSION}..."
-if ! podman pull ghcr.io/han-rs/container-ci-cloudflared:${VERSION}; then
-    echo "Error: Failed to pull image version ${VERSION}. Check your network connection or version number."
-    exit 1
-fi
+if [ "$UPGRADE" = "true" ]; then
+	if [ "$FULL_UPGRADE" = "true" ]; then
+		log_info "Updating cloudflared service..."
+		copy ./assets/cloudflared.volume ~/.config/containers/systemd/cloudflared.volume
+		copy ./assets/cloudflared.container ~/.config/containers/systemd/cloudflared.container
+		systemctl --user daemon-reload
+	fi
 
-if [ "$RESTART" = "true" ]; then
-    echo "Restarting cloudflared service..."
-    systemctl --user restart cloudflared
+	log_info "Restarting cloudflared service..."
+	systemctl --user restart cloudflared
 else
-    mkdir -p ~/.config/containers/systemd
+	mkdir -p ~/.config/containers/systemd
+	copy ./assets/cloudflared.volume ~/.config/containers/systemd/cloudflared.volume
+	copy ./assets/cloudflared.container ~/.config/containers/systemd/cloudflared.container
 
-    # Check if config already exists
-    if [ -f ~/.config/containers/systemd/cloudflared.container ]; then
-        echo "Warning: Existing cloudflared.container will be backed up to cloudflared.container.bak"
-        cp ~/.config/containers/systemd/cloudflared.container ~/.config/containers/systemd/cloudflared.container.bak
-    fi
+	# Edit if necessary (skip if --noninteractive is passed)
+	if [ "$NONINTERACTIVE" != "true" ]; then
+		log_info "Opening editor for configuration. Press Ctrl+X to exit nano."
+		${EDITOR:-nano} ~/.config/containers/systemd/cloudflared.container
+	fi
 
-    cp -f ./assets/cloudflared.container ~/.config/containers/systemd/cloudflared.container
+	# Check if linger is already enabled
+	if ! loginctl show-user $USER --property=Linger | grep -q "Linger=yes"; then
+		if [ "$NONINTERACTIVE" = "true" ]; then
+			log_warning "Warning: Linger not enabled for user. Please run manually: sudo loginctl enable-linger $USER"
+		else
+			log_info "Enabling linger for user (requires sudo)..."
+			sudo loginctl enable-linger $USER
+		fi
+	fi
 
-    if [ -f ~/.config/containers/systemd/cloudflared.volume ]; then
-        echo "Warning: Existing cloudflared.volume will be backed up to cloudflared.volume.bak"
-        cp ~/.config/containers/systemd/cloudflared.volume ~/.config/containers/systemd/cloudflared.volume.bak
-    fi
+	log_info "Starting cloudflared service..."
 
-    cp -f ./assets/cloudflared.volume ~/.config/containers/systemd/cloudflared.volume
+	systemctl --user daemon-reload
+	systemctl --user start cloudflared-volume
+	systemctl --user start cloudflared
 
-    # Edit if necessary (skip if --skip-edit is passed)
-    if [ "$SKIP_EDIT" != "true" ]; then
-        echo "Opening editor for configuration. Press Ctrl+X to exit nano."
-        ${EDITOR:-nano} ~/.config/containers/systemd/cloudflared.container
-    fi
-
-    # Reload systemd and start the service
-    echo "Enabling linger for user (requires sudo)..."
-    sudo loginctl enable-linger $USER
-
-    echo "Starting cloudflared service..."
-    systemctl --user daemon-reload
-    systemctl --user start cloudflared-volume
-    systemctl --user start cloudflared
-
-    echo "Done! Check service status with: systemctl --user status cloudflared"
+	log_success "Done! Check service status with: systemctl --user status cloudflared"
 fi
