@@ -16,10 +16,10 @@ AutoUpdate=registry
 # Network=host
 # * Mount the cloudflared volume to share unix sockets.
 Volume=cloudflared.volume:/sockets
-# * Command to run in the container.
-Exec=tunnel run
 # * Specify tunnel access token via environment variable.
 Environment=TUNNEL_TOKEN=SPECIFY_YOUR_TUNNEL_TOKEN_HERE
+# * Command to run in the container.
+Exec=tunnel run
 
 [Service]
 # * Always restart the container if it stops (equivalent to unless-stopped).
