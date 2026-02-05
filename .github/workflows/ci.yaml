@@ -13,6 +13,10 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   DOCKER_BUILDX_VERSION: "0.31.1"
   DOCKER_BUILDKIT_VERSION: "0.27.1"
+  # The target Cloudflared version to build
+  # Update Dockerfile as well when changing these values
+  CLOUDFLARED_VERSION: "2026.1.2"
+  CLOUDFLARED_COMMIT: "d7c62aed71e2aaccbe9230b9928f0e52a53f11c4"
 
 jobs:
   build:
@@ -54,9 +58,14 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64/v8
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:base
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.CLOUDFLARED_VERSION }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.CLOUDFLARED_VERSION }}+image.${{ env.IMAGE_VCS_REF }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             IMAGE_BUILD_DATE=${{ env.IMAGE_BUILD_DATE }}
             IMAGE_VCS_REF=${{ env.IMAGE_VCS_REF }}
+            CLOUDFLARED_VERSION=${{ env.CLOUDFLARED_VERSION }}
+            CLOUDFLARED_COMMIT=${{ env.CLOUDFLARED_COMMIT }}

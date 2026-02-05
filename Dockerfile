@@ -1,14 +1,13 @@
 # Build container
 
-ARG TARGETARCH
-
 ARG GO_BASE_IMAGE=1.25.7-alpine3.23
 
 # Image METADATA
 ARG IMAGE_BUILD_DATE=1970-01-01T00:00:00+00:00
 ARG IMAGE_VCS_REF=00000000
 
-# The target FreeNGINX version to build
+# The target Cloudflared version to build
+# Update ci.yaml as well when changing these values
 ARG CLOUDFLARED_VERSION=2026.1.2
 ARG CLOUDFLARED_COMMIT=d7c62aed71e2aaccbe9230b9928f0e52a53f11c4
 
@@ -18,6 +17,8 @@ ARG GID=65532
 # Proxy settings (if any)
 ARG http_proxy=
 ARG https_proxy=
+
+ARG TARGETARCH
 
 FROM --platform=linux/${TARGETARCH} golang:${GO_BASE_IMAGE} AS builder
 
