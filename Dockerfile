@@ -62,7 +62,6 @@ RUN if [ "${TARGETARCH}" = "arm/v6" ]; then export GOARM=6; fi; \
 
 FROM scratch
 
-ARG IMAGE_VERSION
 ARG IMAGE_BUILD_DATE
 ARG IMAGE_VCS_REF
 
@@ -80,7 +79,7 @@ LABEL description="Cloudflared Distroless Image (non official)" \
     org.opencontainers.image.source="https://github.com/han-rs/container-ci-cloudflared" \
     org.opencontainers.image.version=${CLOUDFLARED_VERSION}+image.${IMAGE_VCS_REF} \
     org.opencontainers.image.vendor="Hantong Chen" \
-    org.opencontainers.image.licenses="BSD-2-Clause" \
+    org.opencontainers.image.licenses="Apache-2.0" \
     org.opencontainers.image.title="Cloudflared Distroless Image (non official)" \
     org.opencontainers.image.description="Cloudflared Distroless Image (non official)"
 
