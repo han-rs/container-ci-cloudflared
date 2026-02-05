@@ -24,11 +24,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm64/v8
 
     steps:
       - name: Checkout
@@ -55,7 +50,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push ${{ matrix.platform }}
+      - name: Build and push
         uses: docker/build-push-action@v6
         env:
           DOCKER_BUILD_RECORD_UPLOAD: false
@@ -65,13 +60,13 @@ jobs:
           provenance: false
           context: .
           file: ./Dockerfile
-          platforms: ${{ matrix.platform }}
+          platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.CLOUDFLARED_VERSION }}
-          cache-from: type=gha,scope=build-${{ matrix.platform }}
-          cache-to: type=gha,mode=max,scope=build-${{ matrix.platform }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             IMAGE_BUILD_DATE=${{ env.IMAGE_BUILD_DATE }}
             IMAGE_VCS_REF=${{ env.IMAGE_VCS_REF }}
