@@ -87,15 +87,21 @@ LABEL description="Cloudflared Distroless Image (non official)" \
     org.opencontainers.image.description="Cloudflared Distroless Image (non official)"
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder --chown="${UID}:${GID}" /src/cloudflared /cloudflared
+COPY --from=builder --chown="${UID}:${GID}" --chmod=775 /src/cloudflared/cloudflared /opt/cloudflared/cloudflared
 
-ENV NO_AUTOUPDATE=true
+WORKDIR /opt/cloudflared
 
-WORKDIR /
+# Health check for container orchestration
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=2 \
+    CMD ["./cloudflared", "tunnel", "--metrics", "127.0.0.1:20241", "ready"]
+
+# Use SIGQUIT for graceful shutdown with connection draining
+STOPSIGNAL SIGQUIT
 
 # Run as non-root user.
 USER ${UID}:${GID}
 
-ENTRYPOINT ["/cloudflared", "--no-autoupdate"]
+ENTRYPOINT ["./cloudflared", "--no-autoupdate"]
 
-CMD ["version"]
+# Default to print help info.
+CMD ["--help"]

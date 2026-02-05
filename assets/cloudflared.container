@@ -15,7 +15,7 @@ AutoUpdate=registry
 # * Use the host's network stack for better performance.
 # Network=host
 # * Mount the cloudflared volume to share unix sockets.
-Volume=cloudflared.volume:/sockets
+Volume=cloudflared.volume:/opt/cloudflared/shared-volume
 # * Specify tunnel access token via environment variable.
 Environment=TUNNEL_TOKEN=SPECIFY_YOUR_TUNNEL_TOKEN_HERE
 # * Command to run in the container.
