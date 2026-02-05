@@ -1,22 +1,24 @@
 # Build container
 
+# Base image
 ARG GO_BASE_IMAGE=1.25.7-alpine3.23
 
 # Image METADATA
 ARG IMAGE_BUILD_DATE=1970-01-01T00:00:00+00:00
 ARG IMAGE_VCS_REF=00000000
 
-# The target Cloudflared version to build
-# Update ci.yaml as well when changing these values
+# Versions
+# These versions should be kept in sync with the ones in .github/workflows/ci.yaml.
 ARG CLOUDFLARED_VERSION=2026.1.2
 ARG CLOUDFLARED_COMMIT=d7c62aed71e2aaccbe9230b9928f0e52a53f11c4
 
+# Non-root user and group IDs
 ARG UID=65532
 ARG GID=65532
 
-# Proxy settings (if any)
-ARG http_proxy=
-ARG https_proxy=
+# Proxy settings
+ARG http_proxy=""
+ARG https_proxy=""
 
 ARG TARGETARCH
 
@@ -84,13 +86,14 @@ LABEL description="Cloudflared Distroless Image (non official)" \
     org.opencontainers.image.title="Cloudflared Distroless Image (non official)" \
     org.opencontainers.image.description="Cloudflared Distroless Image (non official)"
 
-WORKDIR /
-
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder --chown="${UID}:${GID}" /src/cloudflared .
+COPY --from=builder --chown="${UID}:${GID}" /src/cloudflared /cloudflared
 
 ENV NO_AUTOUPDATE=true
 
+WORKDIR /
+
+# Run as non-root user.
 USER ${UID}:${GID}
 
 ENTRYPOINT ["/cloudflared", "--no-autoupdate"]
