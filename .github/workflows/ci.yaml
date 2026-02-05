@@ -13,8 +13,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   DOCKER_BUILDX_VERSION: "0.31.1"
   DOCKER_BUILDKIT_VERSION: "0.27.1"
-  # The target Cloudflared version to build
-  # Update Dockerfile as well when changing these values
+  # Versions
+  # These versions should be kept in sync with the ones in Dockerfile.
   CLOUDFLARED_VERSION: "2026.1.2"
   CLOUDFLARED_COMMIT: "d7c62aed71e2aaccbe9230b9928f0e52a53f11c4"
 
