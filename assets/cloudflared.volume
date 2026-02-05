@@ -1,0 +1,17 @@
+[Unit]
+Description=Cloudflared sockets volume
+RequiresMountsFor=%t/containers
+
+[Volume]
+# * Volume name
+VolumeName=cloudflared
+# * Use the local driver (managed internally by Podman)
+Driver=local
+
+[Service]
+# * Set the permissions of the volume.
+ExecStartPost=/usr/bin/bash -c "/usr/bin/podman unshare chmod 777 $$(/usr/bin/podman volume inspect cloudflared -f '{{.Mountpoint}}')"
+
+[Install]
+# * Enable the service to start at boot.
+WantedBy=default.target

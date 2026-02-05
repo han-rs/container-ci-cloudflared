@@ -1,0 +1,33 @@
+[Unit]
+Description=Cloudflared Tunnel Container Service
+RequiresMountsFor=%t/containers
+
+[Container]
+# * Specify the name of the container.
+ContainerName=cloudflared
+# * Specify the container image to use.
+Image=ghcr.io/han-rs/container-ci-cloudflared:latest
+# * Automatically pull the latest image.
+AutoUpdate=registry
+# * Change the user namespace mode
+# * Don't modify this field unless you know what you're doing.
+# UserNS=host
+# * Use the host's network stack for better performance.
+# Network=host
+# * Mount the cloudflared volume to share unix sockets.
+Volume=cloudflared.volume:/cloudflared
+
+# * Command to run in the container.
+Exec=tunnel run
+# * Environment variables
+Environment=TUNNEL_TOKEN=${TUNNEL_TOKEN}
+
+[Service]
+# * Always restart the container if it stops (equivalent to unless-stopped).
+Restart=always
+# * Give the container more time to start.
+TimeoutStartSec=900
+
+[Install]
+# * Enable the service to start at boot.
+WantedBy=default.target
