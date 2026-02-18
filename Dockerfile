@@ -1,7 +1,7 @@
 # Build container
 
 # Base image
-ARG GO_BASE_IMAGE=1.25.7-alpine3.23
+ARG GO_BASE_IMAGE=1.26.0-alpine3.23
 
 # Image METADATA
 ARG IMAGE_BUILD_DATE=1970-01-01T00:00:00+00:00
@@ -9,8 +9,8 @@ ARG IMAGE_VCS_REF=00000000
 
 # Versions
 # These versions should be kept in sync with the ones in .github/workflows/ci.yaml.
-ARG CLOUDFLARED_VERSION=2026.1.2
-ARG CLOUDFLARED_COMMIT=d7c62aed71e2aaccbe9230b9928f0e52a53f11c4
+ARG CLOUDFLARED_VERSION=2026.2.0
+ARG CLOUDFLARED_COMMIT=66587173e2cd5b2ea6d495e97aec6551e5e18c30
 
 # Non-root user and group IDs
 ARG UID=65532
@@ -41,7 +41,7 @@ WORKDIR /src
 
 RUN set -e \
     && \
-    git clone --depth 1 --recurse-submodules -j8 https://github.com/cloudflare/cloudflared
+    git clone --recurse-submodules -j8 https://github.com/cloudflare/cloudflared
 
 WORKDIR /src/cloudflared
 
@@ -49,7 +49,7 @@ ARG CLOUDFLARED_COMMIT
 
 RUN set -e \
     && \
-    git checkout "${CLOUDFLARED_COMMIT}"
+    git checkout "$CLOUDFLARED_COMMIT"
 
 # From this point on, step(s) are duplicated per-architecture
 ENV GO111MODULE=on CGO_ENABLED=0

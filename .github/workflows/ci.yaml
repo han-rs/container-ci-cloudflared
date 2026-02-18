@@ -15,8 +15,8 @@ env:
   DOCKER_BUILDKIT_VERSION: "0.27.1"
   # Versions
   # These versions should be kept in sync with the ones in Dockerfile.
-  CLOUDFLARED_VERSION: "2026.1.2"
-  CLOUDFLARED_COMMIT: "d7c62aed71e2aaccbe9230b9928f0e52a53f11c4"
+  CLOUDFLARED_VERSION: "2026.2.0"
+  CLOUDFLARED_COMMIT: "66587173e2cd5b2ea6d495e97aec6551e5e18c30"
 
 jobs:
   build:
