@@ -1,7 +1,7 @@
 # Build container
 
 # Base image
-ARG GO_BASE_IMAGE=1.26.0-alpine3.23
+ARG GO_BASE_IMAGE=1.26.1-alpine3.23
 
 # Image METADATA
 ARG IMAGE_BUILD_DATE=1970-01-01T00:00:00+00:00
