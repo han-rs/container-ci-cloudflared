@@ -1,7 +1,7 @@
 # Build container
 
 # Base image
-ARG GO_BASE_IMAGE=1.26.1-alpine3.23
+ARG GO_BASE_IMAGE=1.26.2-alpine3.23
 
 # Image METADATA
 ARG IMAGE_BUILD_DATE=1970-01-01T00:00:00+00:00
@@ -9,7 +9,7 @@ ARG IMAGE_VCS_REF=00000000
 
 # Versions
 # These versions should be kept in sync with the ones in .github/workflows/ci.yaml.
-ARG CLOUDFLARED_VERSION=2026.3.0
+ARG CLOUDFLARED_VERSION=2026.5.0
 
 # Non-root user and group IDs
 ARG UID=65532
@@ -28,7 +28,7 @@ ARG https_proxy
 
 RUN set -e && \
     apk --no-cache add \
-    ca-certificates=20251003-r0 \
+    ca-certificates=20260413-r0 \
     git=2.52.0-r0 \
     build-base=0.5-r3
 
